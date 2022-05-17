@@ -8,7 +8,7 @@ from helper import plot
 
 MAX_MEMORY = 100000
 BATCH_SIZE = 1000
-LR = 0.001
+LR = 0.005
 
 class Agent:
     def __init__(self):
@@ -17,15 +17,20 @@ class Agent:
         self.gamma = 0.9   # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() if memory exceded
         self.model = Linear_QNet(11, 256, 3)
+        
+        # load trained model
+        self.model.load_state_dict(torch.load("./model/model.pth"))
+        self.model.eval()
+        
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
         head = game.snake.rect.center
         
-        point_l = (head[0] - 20, head[1])
-        point_r = (head[0] + 20, head[1])
-        point_u = (head[0], head[1] - 20)
-        point_d = (head[0], head[1] + 20)
+        point_l = (head[0] - 29, head[1])
+        point_r = (head[0] + 29, head[1])
+        point_u = (head[0], head[1] - 29)
+        point_d = (head[0], head[1] + 29)
         
         dir_l = game.snake.direction == game.snake.left
         dir_r = game.snake.direction == game.snake.right
@@ -58,10 +63,10 @@ class Agent:
             dir_d,
             
             # Food location 
-            game.food.rect.center[0] < game.snake.rect.center[0],  # food left
-            game.food.rect.center[0] > game.snake.rect.center[0],  # food right
-            game.food.rect.center[1] < game.snake.rect.center[1],  # food up
-            game.food.rect.center[1] > game.snake.rect.center[1]  # food down
+            game.food.rect.left < game.snake.rect.left,  # food left
+            game.food.rect.right > game.snake.rect.right,  # food right
+            game.food.rect.top < game.snake.rect.top,  # food up
+            game.food.rect.bottom > game.snake.rect.bottom  # food down
             ]
 
         return np.array(state, dtype=int)
@@ -132,7 +137,7 @@ def train():
                 record = score
                 agent.model.save()
             
-            print(f"Game: {agent.number_games}, Score: {score}, Record: {record}")
+            #print(f"Game: {agent.number_games}, Score: {score}, Record: {record}")
 
             plot_scores.append(score)
             total_score += score

@@ -12,7 +12,7 @@ class SnakeAI:
         self.rect.center = self.get_random_position()
         self.direction = randint(1,4)
         self.movement = vec2(0, 0)
-        self.step_delay = 0.1 # milliseconds
+        self.step_delay = 1 # milliseconds
         self.time = 0
         self.length = 1
         self.body = []
@@ -26,7 +26,7 @@ class SnakeAI:
 
     def is_collision(self, pt):
         # hits boundary
-        if pt[0] > (self.game.WIN_SIZE - self.game.TILE_SIZE - 2) or pt[0] < 0 or pt[1] > (self.game.WIN_SIZE - self.game.TILE_SIZE - 2) or pt[1] < 0:
+        if pt[0] > (self.game.WIN_SIZE - self.game.TILE_SIZE - 2) or pt[0] < 0 or pt[1] > (self.game.WIN_SIZE - self.game.TILE_SIZE - 2) or pt[1] < 0 or self.game.iteration > 150 * len(self.body):
             return True
         return False   
 
@@ -77,14 +77,14 @@ class SnakeAI:
         return [randrange(self.size // 2, self.game.WIN_SIZE - self.size // 2, self.size)] * 2
 
     def check_borders(self):
-        if self.rect.left < 0 or self.rect.right > self.game.WIN_SIZE or self.game.iteration > 100 * len(self.body):
-            self.game.reward -= 10
+        if self.rect.left < 0 or self.rect.right > self.game.WIN_SIZE or self.game.iteration > 150 * len(self.body):
             self.game.game_over = True
+            self.game.reward = -10
             return self.game.reward, self.game.game_over, self.game.score
 
-        if self.rect.top < 0 or self.rect.bottom > self.game.WIN_SIZE or self.game.iteration > 100 * len(self.body):
-            self.game.reward -= 10
+        if self.rect.top < 0 or self.rect.bottom > self.game.WIN_SIZE or self.game.iteration > 150 * len(self.body):
             self.game.game_over = True
+            self.game.reward = -10
             return self.game.reward, self.game.game_over, self.game.score
 
     def check_food(self):
@@ -94,12 +94,12 @@ class SnakeAI:
             self.length += 1
             self.game.score += 1
             self.game.score_text = self.game.font.render(f"SCORE: {self.game.score}", True, (255, 255, 255))
-            self.game.reward += 10
+            self.game.reward = 50
 
     def check_cannibalism(self):
-        if len(self.body) != len(set(segment.center for segment in self.body)) or self.game.iteration > 100 * len(self.body):
-            self.game.reward -= 10
+        if len(self.body) != len(set(segment.center for segment in self.body)) or self.game.iteration > 150 * len(self.body):
             self.game.game_over = True
+            self.game.reward = -100
             return self.game.reward, self.game.game_over, self.game.score
 
     def draw(self):
@@ -111,6 +111,9 @@ class Food:
         self.size = game.TILE_SIZE
         self.rect = pg.rect.Rect([0, 0, game.TILE_SIZE - 2, game.TILE_SIZE - 2])
         self.rect.center = self.game.snake.get_random_position()
+        while self.rect.center in [segment.center for segment in self.game.snake.body]:
+            self.rect.center = self.game.snake.get_random_position()
+            #print("WRONG SPAWN SITE")
 
     def draw(self):
         pg.draw.rect(self.game.screen, "red", self.rect)

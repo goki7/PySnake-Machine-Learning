@@ -5,8 +5,8 @@ class Game:
     def __init__(self):
         pg.init()
         pg.display.set_caption("SnakeAI")
-        self.WIN_SIZE = 500
-        self.TILE_SIZE = 50
+        self.WIN_SIZE = 750
+        self.TILE_SIZE = 25
         self.screen = pg.display.set_mode([self.WIN_SIZE] * 2)
         self.clock = pg.time.Clock()
         self.FPS = 2500
@@ -52,6 +52,8 @@ class Game:
 
         # update screen and clock
         self.draw()
+
+        #print(self.iteration)
         self.clock.tick(self.FPS)
 
         return self.reward, self.game_over, self.score       
